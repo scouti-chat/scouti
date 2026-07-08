@@ -1,0 +1,11 @@
+# Go build output
+/cli/scouti
+/cli/scouti.exe
+/cli/dist/
+*.test
+*.out
+
+# OS / editor cruft
+.DS_Store
+Thumbs.db
+*.swp
