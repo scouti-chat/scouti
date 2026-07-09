@@ -19,13 +19,11 @@ Code / Codex / Cursor:
 
 > Add Scouti (an AI user-feedback system) to this project. Download its skill bundle
 > — `https://github.com/scouti-chat/scouti/releases/latest/download/skill.tar.gz` —
-> unpack it into a folder here (e.g. `scouti-skill/`), and open `SKILL.md` inside.
-> It's a few Markdown docs plus one small open-source CLI; `SKILL.md` starts by
-> explaining exactly what it is, then walks you through setup. Read it and follow it.
+> unpack it into a folder here (e.g. `scouti-skill/`), then open `SKILL.md` inside and
+> follow it.
 
-That's the whole bootstrap. `SKILL.md` opens with a short "what this is / is it
-safe" rundown, then drives the rest — CLI download, sign-in, project setup, widget
-install, topic design, and reading feedback back.
+That's the whole bootstrap. `SKILL.md` drives the rest — CLI download, sign-in,
+project setup, widget install, topic design, and reading feedback back.
 
 ## What's in this repo
 

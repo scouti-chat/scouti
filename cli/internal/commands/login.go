@@ -1,6 +1,7 @@
 package commands
 
 import (
+	"context"
 	"fmt"
 	"os"
 	"time"
@@ -9,18 +10,24 @@ import (
 	"github.com/scouti-chat/scouti/cli/internal/device"
 )
 
+// maxLoginWait caps how long the device-authorization flow waits for the
+// developer to approve in the browser. The server's code lives longer, but a
+// forgotten or headless `scouti login` shouldn't hang the terminal — we give up
+// and tell them to re-run it.
+const maxLoginWait = 5 * time.Minute
+
 // Login authorizes this machine and stores the resulting access key.
 //
 // With --token (or SCOUTI_ACCESS_KEY) it stores a pre-issued key for CI /
 // headless use. Otherwise it runs the device-authorization flow: open a browser
 // to sign in and approve, then poll with the private device_code until the key
-// is issued.
+// is issued or maxLoginWait elapses.
 func Login(args []string) int {
 	if token := tokenArg(args); token != "" {
 		return save(creds.Credentials{AccessKey: token})
 	}
 
-	start, err := device.Begin()
+	start, err := device.Begin(context.Background())
 	if err != nil {
 		return fail(err)
 	}
@@ -32,12 +39,26 @@ func Login(args []string) int {
 	}
 	fmt.Println("Waiting for approval…")
 
-	deadline := time.Now().Add(time.Duration(start.ExpiresIn) * time.Second)
+	// Bound the wait: never longer than maxLoginWait, nor past the server's expiry.
+	wait := maxLoginWait
+	if exp := time.Duration(start.ExpiresIn) * time.Second; exp > 0 && exp < wait {
+		wait = exp
+	}
+	ctx, cancel := context.WithTimeout(context.Background(), wait)
+	defer cancel()
+
 	interval := start.Interval
-	for time.Now().Before(deadline) {
-		time.Sleep(time.Duration(interval) * time.Second)
-		res, err := device.Poll(start.DeviceCode)
+	for {
+		select {
+		case <-ctx.Done():
+			return timedOut(wait)
+		case <-time.After(time.Duration(interval) * time.Second):
+		}
+		res, err := device.Poll(ctx, start.DeviceCode)
 		if err != nil {
+			if ctx.Err() != nil {
+				return timedOut(wait)
+			}
 			return fail(err)
 		}
 		if res.Issued {
@@ -45,7 +66,11 @@ func Login(args []string) int {
 		}
 		interval = res.Interval
 	}
-	fmt.Fprintln(os.Stderr, "Login timed out before approval. Run `scouti login` again.")
+}
+
+// timedOut reports that approval didn't arrive within wait and returns exit 1.
+func timedOut(wait time.Duration) int {
+	fmt.Fprintf(os.Stderr, "Login timed out after %s without approval. Run `scouti login` again.\n", wait)
 	return 1
 }
 

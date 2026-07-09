@@ -7,15 +7,23 @@ package device
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 	"errors"
 	"fmt"
 	"net/http"
 	"os/exec"
 	"runtime"
+	"time"
 
 	"github.com/scouti-chat/scouti/cli/internal/config"
 )
+
+// requestTimeout bounds each individual device-flow HTTP call so a stalled
+// connection can't wedge login between the caller's overall deadline checks.
+const requestTimeout = 30 * time.Second
+
+var httpClient = &http.Client{Timeout: requestTimeout}
 
 // Start describes an initiated authorization (from POST /auth/device/start).
 type Start struct {
@@ -37,8 +45,8 @@ type PollResult struct {
 }
 
 // Begin initiates a device authorization.
-func Begin() (*Start, error) {
-	res, err := http.Post(endpoint("start"), "application/json", nil)
+func Begin(ctx context.Context) (*Start, error) {
+	res, err := post(ctx, endpoint("start"), nil)
 	if err != nil {
 		return nil, err
 	}
@@ -58,9 +66,9 @@ func Begin() (*Start, error) {
 
 // Poll checks the authorization once. A terminal condition (expired / denied)
 // returns an error; a still-pending state returns Issued=false with no error.
-func Poll(deviceCode string) (PollResult, error) {
+func Poll(ctx context.Context, deviceCode string) (PollResult, error) {
 	payload, _ := json.Marshal(map[string]string{"device_code": deviceCode})
-	res, err := http.Post(endpoint("token"), "application/json", bytes.NewReader(payload))
+	res, err := post(ctx, endpoint("token"), payload)
 	if err != nil {
 		return PollResult{}, err
 	}
@@ -112,6 +120,16 @@ func OpenBrowser(target string) bool {
 	}
 	go func() { _ = cmd.Wait() }() // reap without blocking
 	return true
+}
+
+// post issues a JSON POST bound to ctx via the shared, timeout-guarded client.
+func post(ctx context.Context, url string, body []byte) (*http.Response, error) {
+	req, err := http.NewRequestWithContext(ctx, http.MethodPost, url, bytes.NewReader(body))
+	if err != nil {
+		return nil, err
+	}
+	req.Header.Set("Content-Type", "application/json")
+	return httpClient.Do(req)
 }
 
 func endpoint(leaf string) string {

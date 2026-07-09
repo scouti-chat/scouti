@@ -91,6 +91,40 @@ Get the tooling in place so the rest is possible.
   or your agent's equivalent project-level skills folder. (The CLI binary is a *tool*, not
   project content, so it stays on the system `PATH` from Step 0.)
 
+- **Step 2 — Orient the developer, then open the conversation.** Setup is done, but
+  they may not yet know what Scouti is — they might have just told you to "add user
+  feedback." In a few sentences, say what it does and what that unlocks — [`./guide.md`](./guide.md) §1 has the
+  framing — then call out a few things that make Scouti different from a survey
+  widget or a feedback form:
+
+  - **Proactive feedback at the right moment.** You wire named **touchpoints** into
+    the product (`scouti.mount("post_checkout")`, etc.); when that moment fires, the
+    widget surfaces a targeted question while the experience is still fresh. An AI
+    Scout runs a short voice-first chat on the spot — follow-ups in the moment,
+    not a one-line text box — so "it's broken" becomes something you can act on.
+  - **Always-on reactive helper.** Alongside those pop-ups, one sticky "tell us
+    anything" button stays available so users can reach out whenever they want.
+  - **Outreach — reach back without another deploy.** When something in the
+    Dashboard needs a follow-up, Scouti queues a message that lands the next time
+    that user is back in the product; their reply flows in like any other
+    conversation. No new email blast or frontend change.
+  - **Structured insight, not a transcript dump.** Every chat is auto-summarized into
+    tagged, sentiment-scored **Points** you can filter and trend in Mission Control.
+
+  Keep the pitch conversational, not a feature list — but make sure they hear that
+  Scouti *reaches users in context* and *goes deep in the moment*.
+
+  Then hand it back with a couple of concrete openers, grounded in what you already
+  know from their repo — for example:
+
+  - Which product or project do you most want feedback on right now?
+  - Any feedback ideas already in mind — something you've been meaning to ask users?
+  - What pain points or open questions about your users are on your mind — what would
+    you most like to learn from them?
+
+  Adapt these to the project; don't read them as a script. Their answer flows
+  straight into Task 2.
+
 ### Task 2 — Design a feedback flow with the developer
 
 This is a **conversation, not a form-fill.** The developer usually arrives with a
@@ -163,3 +197,21 @@ out the potential you can see — a topic worth asking, a moment worth instrumen
 small experiment worth running — say why it's worth it, and offer to build it.
 Suggest, don't insist, and follow their lead. The aim is to leave them hearing their
 users better than they knew to ask for. (Design craft for this: [`./guide.md`](./guide.md) §3.)
+
+## Keeping up to date
+
+When the developer asks to update Scouti, or you're working from an older skill copy:
+
+1. **Pull the latest skill bundle** from the release and replace the project's skill
+   folder (e.g. `.claude/skills/scouti/`):
+
+   ```bash
+   curl -fsSL "https://github.com/scouti-chat/scouti/releases/latest/download/skill.tar.gz" -o /tmp/skill.tar.gz
+   tar -xzf /tmp/skill.tar.gz -C /path/to/your/skills/scouti
+   ```
+
+   Adjust the target path to wherever this project keeps its agent skills.
+
+2. **Pull the latest CLI** using the install block in **Task 1 → Step 0** of the
+   freshly unpacked `SKILL.md` (the `curl … scouti-${os}-${arch}` download). You
+   don't need to sign in again unless the local key was removed.
