@@ -2,21 +2,47 @@
 
 One-click **Scouti** integration for AI coding agents. Scouti gives your product a
 small virtual team that talks to your users and turns those conversations into
-product insight. This kit lets an agent (Claude Code / Codex / Cursor) sign you
-in, provision a project, install the widget, and set up your feedback topics.
+structured product insight. This repo builds the two release artifacts an agent
+uses to wire Scouti into *your* project:
+
+- a **skill** tarball (`skill.tar.gz`) — the agent playbook plus the product guide
+  and API reference, fully self-contained, and
+- the **`scouti` CLI** — a single static binary that holds your access key and
+  forwards authenticated calls to the Scouti API.
 
 Website: **https://scouti.chat**
 
-## Quickstart
+## Install (paste this to your coding agent)
 
-Tell your coding agent:
+You don't clone this repo. In your own project, paste the prompt below into Claude
+Code / Codex / Cursor:
 
-> Set up Scouti for my product — read `skill/SKILL.md` and follow it.
+> Add Scouti (an AI user-feedback system) to this project. Download its skill bundle
+> — `https://github.com/scouti-chat/scouti/releases/latest/download/skill.tar.gz` —
+> unpack it into a folder here (e.g. `scouti-skill/`), and open `SKILL.md` inside.
+> It's a few Markdown docs plus one small open-source CLI; `SKILL.md` starts by
+> explaining exactly what it is, then walks you through setup. Read it and follow it.
 
-## What's here
+That's the whole bootstrap. `SKILL.md` opens with a short "what this is / is it
+safe" rundown, then drives the rest — CLI download, sign-in, project setup, widget
+install, topic design, and reading feedback back.
 
-- [`skill/`](skill/) — the agent playbook (`SKILL.md`). Start here.
-- [`cli/`](cli/) — the `scouti` CLI (Go): holds your access key and forwards
-  authenticated calls to the Scouti API. See [`cli/README.md`](cli/README.md).
+## What's in this repo
 
-`CLAUDE.md`, `AGENTS.md`, and `.cursor/rules/` just point agents at the skill.
+- [`skill/`](skill/) — source of the published skill: `SKILL.md` (authored) plus
+  `guide.md` and `api.md` (synced from the main product docs). Shipped as
+  `skill.tar.gz`.
+- [`cli/`](cli/) — the `scouti` CLI (Go). Shipped as per-platform binaries. See
+  [`cli/README.md`](cli/README.md).
+
+## Releases
+
+`make dist` (from this directory) builds the full, upload-ready set into `./dist`:
+
+- `scouti-<os>-<arch>[.exe]` — raw CLI binary per platform (direct download).
+- `scouti-<os>-<arch>.tar.gz` — CLI archive per platform.
+- `skill.tar.gz` — the installable skill bundle (see the prompt above).
+
+Run `sc sync_assets` in the main repo first so `skill/guide.md` and `skill/api.md`
+are current, then `make dist` and upload everything in `./dist` to a GitHub
+release. CI does this automatically on a `v*` tag (`.github/workflows/release.yml`).

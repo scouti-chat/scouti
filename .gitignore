@@ -1,7 +1,9 @@
+# Release artifacts
+/dist/
+
 # Go build output
 /cli/scouti
 /cli/scouti.exe
-/cli/dist/
 *.test
 *.out
 

@@ -16,9 +16,10 @@ jobs:
         with:
           go-version: "1.22"
           cache: false
-      - name: Cross-compile all platforms
-        run: make -C cli release
-      - name: Publish binaries to the release
+      - name: Build release artifacts
+        # Cross-compiled binaries + per-platform tarballs + skill.tar.gz, all in ./dist.
+        run: make dist
+      - name: Publish artifacts to the release
         uses: softprops/action-gh-release@v2
         with:
-          files: cli/dist/*
+          files: dist/*

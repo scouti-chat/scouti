@@ -233,7 +233,7 @@ scouti request PATCH  /projects/PROJECT_ID/topics/TOPIC_ID '{"hint":{"requiremen
 scouti request DELETE /projects/PROJECT_ID/topics/TOPIC_ID
 ```
 
-**Direct link:** to get a shareable link for a topic, enable it:
+**Direct link:** enable it, and the topic opens at `https://scouti.chat/t/TOPIC_ID`:
 
 ```bash
 scouti request PATCH /projects/PROJECT_ID/topics/TOPIC_ID '{"direct_link_enabled":true}'
@@ -261,7 +261,7 @@ A **touchpoint** is where/when topics are surfaced in your product. Rows are
 | `mode` | `reactive` \| `proactive` | Must match the `type` of the topics bound here (enforced server-side). |
 | `force_show` | boolean | Bypass the normal show/skip heuristics. |
 | `probability` | number `0`–`1` | Mount-time sampling rate — the touchpoint only fires if a per-mount roll passes. Omitted = always fire. |
-| `y_position` | number | Vertical placement hint for the widget. |
+| `y_position` | number `0`–`1` | Vertical placement of the widget button, as a fraction of viewport height (0 = top). |
 | `topics` | array | Topic **bindings** — which topics this touchpoint can surface (see below). |
 
 **Each `topics[]` binding:**

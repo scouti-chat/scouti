@@ -10,7 +10,7 @@ single static binary — no Node, no Python, no runtime to install. All product
 logic lives server-side; the CLI stays deliberately thin so there's nothing to
 learn beyond `login` and `request`.
 
-- Full endpoint reference: [`../api.md`](../api.md)
+- Full endpoint reference: [`../skill/api.md`](../skill/api.md)
 - Agent playbook (how to drive an integration end-to-end): [`../skill/SKILL.md`](../skill/SKILL.md)
 - Website: https://scouti.chat
 
@@ -38,11 +38,12 @@ On Windows, download `scouti-windows-amd64.exe` (or `-arm64`) and put it on your
 
 ### Build from source
 
-Requires Go 1.22+.
+Requires Go 1.22+. The Makefile lives at the **devkit root**, so run these from
+there (`cd ..`):
 
 ```bash
-make build            # build ./scouti for the current platform
-make release          # cross-compile every platform into ./dist
+make build      # build ./cli/scouti for the current platform
+make dist       # cross-compile every platform + archives + skill → ../dist
 make clean
 ```
 
@@ -141,8 +142,8 @@ scouti request PATCH  /projects/PID/topics/TID '{"status":"archived"}'
 scouti request DELETE "/projects/PID/keys?key=pk_live_xxx"
 ```
 
-See [`../api.md`](../api.md) for every endpoint, its parameters, and example
-payloads.
+See [`../skill/api.md`](../skill/api.md) for every endpoint, its parameters, and
+example payloads.
 
 ---
 
