@@ -98,13 +98,16 @@ scouti request GET /projects/PROJECT_ID
 
 Returns `{ id, name, organization_id, metadata, client_auth, doc, created_at }`.
 `client_auth` holds allowed domains and widget keys; `metadata` holds the tag tree
-and attention list; `doc` is the product doc as **plain text** (the server stores
-it base64-encoded, but you never deal with base64).
+and attention list (edit those via their dedicated endpoints below); `doc` is the
+product doc as **plain text** (the server stores it base64-encoded, but you never
+deal with base64).
 
 ### `PATCH /projects/{id}`
 
-Update any of `name`, `domains` (allow-list for the widget), or `metadata`
-(shallow-merged). At least one field is required.
+Update any of `name`, `domains` (allow-list for the widget, ≤ 50 entries), or
+`metadata` (free-form extras, shallow-merged). At least one field is required.
+`tag_tree` and `attention_list` are **not** accepted here — they're validated, so
+set them through their dedicated endpoints below.
 
 ```bash
 scouti request PATCH /projects/PROJECT_ID '{"domains":["example.com","app.example.com"]}'
