@@ -38,6 +38,16 @@ This section walks the full lifecycle from a developer’s perspective: from sig
 
 > **Two equivalent ways to operate Scouti.** Everything below can be done either in the **Dashboard** (point-and-click) or through the **`scouti` CLI / REST API** (`/api/v1`) that AI coding agents drive — projects, the product doc, topics, touchpoints, widget keys, allowed domains, outreach, and status are all reachable both ways. Pick whichever fits the moment; where it matters, this guide notes both. (For the full CLI/API surface, see the companion **API reference**, `api.md`.)
 
+### Fastest setup — one prompt with your coding agent
+
+If you use **Cursor, Claude Code, Codex, Gemini CLI**, or a similar assistant, you can stand up Scouti in **one line** without clicking through the Dashboard first:
+
+1. Open your product's repo in the agent.
+2. Paste a setup prompt—for example: *"Download the Scouti skill from https://github.com/scouti-chat/scouti, follow it, and help me set up Scouti in this project."*
+3. The agent pulls the **Scouti skill** (this guide, the API reference, and setup scripts), walks you through login, creates your project if needed, co-designs Topics and Touchpoints with you, and drops the widget install script plus `mount()` calls into your codebase.
+
+Prefer the UI? **Sign up free** and follow the onboarding tutorial in the Dashboard instead—the same end state, step by step.
+
 ### Step 0 — Set up the workspace
 
 1. **Create an Organization and Project.** The Organization is the billing entity; a Project is one product/app you want feedback on.
@@ -151,6 +161,8 @@ Follow their lead on how far to go on any given thread; Your default stance is *
 ## 4. Developer integration
 
 One principle runs through all of it: **your code only names moments—the Dashboard decides what to ask and when.** You integrate once; from then on you add, retarget, or retire questions entirely from the Dashboard, with no frontend changes or redeploys.
+
+**Best practice: lay down Touchpoints early, configure Topics later.** The decoupling above pays off most when you front-load the code work: walk through your product once and place a `scouti.mount(...)` at every meaningful moment you might ever want feedback from—checkout complete, onboarding milestones, error states, feature discovery, a settings save. Register each name in the Dashboard (or let the first `mount` create it). You don't have to bind a Topic to every hook on day one; leave bindings empty until you're ready. What you gain is a stable map of moments that product, growth, and support can wire up entirely from the Dashboard: create a Proactive Topic, bind it to `post_checkout`, tune Conditions and weights, retire last quarter's question and point the same hook at a new one—all without another frontend change or redeploy. The slow path is the opposite: adding a new `mount()` every time someone wants a different question at a new moment, which puts you back in the redeploy-every-time loop Scouti is meant to replace.
 
 ### 4.1 The install script
 
