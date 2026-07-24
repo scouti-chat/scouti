@@ -1,4 +1,4 @@
-// Package commands implements the scouti subcommands (login, request).
+// Package commands implements the founderping subcommands (login, request).
 package commands
 
 import (

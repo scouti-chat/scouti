@@ -1,21 +1,21 @@
 ---
-name: scouti
-description: Drive Scouti — an AI user-feedback / thought-capture system — from the CLI. Use whenever a developer wants to set up user feedback in their product, design a new feedback flow (topics & touchpoints, in-product interviews or surveys), or review, monitor, and analyze the feedback that has come back. Concepts and integration details live in the bundled guide.md; every endpoint in api.md.
+name: founderping
+description: Drive FounderPing — an AI user-feedback / thought-capture system — from the CLI. Use whenever a developer wants to set up user feedback in their product, design a new feedback flow (topics & touchpoints, in-product interviews or surveys), or review, monitor, and analyze the feedback that has come back. Concepts and integration details live in the bundled guide.md; every endpoint in api.md.
 ---
 
-# Scouti
+# FounderPing
 
-**Scouti** gives a product a small virtual team that holds short, natural
+**FounderPing** gives a product a small virtual team that holds short, natural
 conversations with its users (voice or text) and turns each chat into structured,
-taggable, searchable insight. The developer sets the goals; Scouti's Scouts talk to
+taggable, searchable insight. The developer sets the goals; FounderPing's Scouts talk to
 users and its Analyst files what they said as sentiment-scored, tagged **Points**.
 
-This skill lets you operate Scouti on the developer's behalf through the **`scouti`
+This skill lets you operate FounderPing on the developer's behalf through the **`founderping`
 CLI**, which wraps the `/api/v1` REST API. Anything the Dashboard can do —
 projects, the product doc, topics, touchpoints, widget keys, domains, outreach,
 reading feedback — you can do from the CLI.
 
-Don't assume *why* the developer opened this skill. They might be setting Scouti up
+Don't assume *why* the developer opened this skill. They might be setting FounderPing up
 for the first time, designing a brand-new feedback flow, or just wanting to read and
 make sense of feedback already collected. Work out which, then go to the matching
 task below.
@@ -23,11 +23,11 @@ task below.
 - **Concepts, the full workflow, widget integration, topic-design craft, and every
   configurable option:** [`./guide.md`](./guide.md) — read it; it's the source of truth.
 - **Every endpoint, field, and example payload:** [`./api.md`](./api.md).
-- Website: https://scouti.chat
+- Website: https://founderping.app
 
 ## The one rule
 
-**Never handle the access key.** The `scouti` CLI stores your Scouti key and
+**Never handle the access key.** The `founderping` CLI stores your FounderPing key and
 attaches it to every request itself. Never print it, echo it, copy it into code or
 config, or paste it into the chat. If you ever see a `uak_…` value, stop and tell
 the developer. (Everything else — how to edit their app, how to structure their
@@ -38,8 +38,8 @@ code — is theirs; follow the project's own conventions.)
 Two commands:
 
 ```bash
-scouti login                          # browser sign-in; stores the key locally
-scouti request <METHOD> <PATH> [body] # authenticated call to /api/v1; prints JSON
+founderping login                          # browser sign-in; stores the key locally
+founderping request <METHOD> <PATH> [body] # authenticated call to /api/v1; prints JSON
 ```
 
 `<PATH>` starts with `/` (e.g. `/me`, `/projects/PID/topics`); quote it if it has a
@@ -52,7 +52,7 @@ and react, don't retry blindly. Full surface: [`./api.md`](./api.md).
 These are the typical shapes this work takes — a map, not a menu. They mix freely in
 practice, and anything the API supports is fair game beyond them.
 
-### Task 1 — Set Scouti up (first time)
+### Task 1 — Set FounderPing up (first time)
 
 Get the tooling in place so the rest is possible.
 
@@ -62,17 +62,17 @@ Get the tooling in place so the rest is possible.
   ```bash
   os=$(uname -s | tr '[:upper:]' '[:lower:]')                 # linux | darwin
   arch=$(uname -m); [ "$arch" = "x86_64" ] && arch=amd64; [ "$arch" = "aarch64" ] && arch=arm64
-  curl -fsSL "https://github.com/scouti-chat/scouti/releases/latest/download/scouti-${os}-${arch}" -o scouti
-  chmod +x scouti && mkdir -p ~/.local/bin && mv scouti ~/.local/bin/   # keep ~/.local/bin on PATH
-  scouti --version
+  curl -fsSL "https://github.com/founderping/founderping/releases/latest/download/founderping-${os}-${arch}" -o founderping
+  chmod +x founderping && mkdir -p ~/.local/bin && mv founderping ~/.local/bin/   # keep ~/.local/bin on PATH
+  founderping --version
   ```
 
-  (Windows: grab `scouti-windows-amd64.exe` / `-arm64` from the same release.)
+  (Windows: grab `founderping-windows-amd64.exe` / `-arm64` from the same release.)
 
-  Then run `scouti login`. It's a **browser device-authorization flow**, so it needs
+  Then run `founderping login`. It's a **browser device-authorization flow**, so it needs
   the developer at a browser — you can't finish it on your own:
 
-  1. `scouti login` prints a **verification URL** and a short **user code**, and
+  1. `founderping login` prints a **verification URL** and a short **user code**, and
      tries to open a browser (from an agent/remote shell it usually can't — fine).
   2. **Relay that URL and code to the developer** and ask them to: open it, **sign
      in or sign up**, confirm the code on the page matches the one printed, and
@@ -81,38 +81,38 @@ Get the tooling in place so the rest is possible.
      key down and stores it locally. Nothing is ever typed or pasted, and you never
      see the key.
 
-  Once it returns, `scouti request GET /me` gives you the project id (`PID`) you'll
+  Once it returns, `founderping request GET /me` gives you the project id (`PID`) you'll
   use elsewhere.
 
 - **Step 1 — Keep the skill with the project.** Once you and the developer are
   comfortable with what it is, move the unpacked skill
   folder into this project's **project-level** agent-skills directory so it travels
-  with the repo and loads next time — e.g. `.claude/skills/scouti/` for Claude Code,
+  with the repo and loads next time — e.g. `.claude/skills/founderping/` for Claude Code,
   or your agent's equivalent project-level skills folder. (The CLI binary is a *tool*, not
   project content, so it stays on the system `PATH` from Step 0.)
 
 - **Step 2 — Orient the developer, then open the conversation.** Setup is done, but
-  they may not yet know what Scouti is — they might have just told you to "add user
+  they may not yet know what FounderPing is — they might have just told you to "add user
   feedback." In a few sentences, say what it does and what that unlocks — [`./guide.md`](./guide.md) §1 has the
-  framing — then call out a few things that make Scouti different from a survey
+  framing — then call out a few things that make FounderPing different from a survey
   widget or a feedback form:
 
   - **Proactive feedback at the right moment.** You wire named **touchpoints** into
-    the product (`scouti.mount("post_checkout")`, etc.); when that moment fires, the
+    the product (`founderping.mount("post_checkout")`, etc.); when that moment fires, the
     widget surfaces a targeted question while the experience is still fresh. An AI
     Scout runs a short voice-first chat on the spot — follow-ups in the moment,
     not a one-line text box — so "it's broken" becomes something you can act on.
   - **Always-on reactive helper.** Alongside those pop-ups, one sticky "tell us
     anything" button stays available so users can reach out whenever they want.
   - **Outreach — reach back without another deploy.** When something in the
-    Dashboard needs a follow-up, Scouti queues a message that lands the next time
+    Dashboard needs a follow-up, FounderPing queues a message that lands the next time
     that user is back in the product; their reply flows in like any other
     conversation. No new email blast or frontend change.
   - **Structured insight, not a transcript dump.** Every chat is auto-summarized into
     tagged, sentiment-scored **Points** you can filter and trend in Mission Control.
 
   Keep the pitch conversational, not a feature list — but make sure they hear that
-  Scouti *reaches users in context* and *goes deep in the moment*.
+  FounderPing *reaches users in context* and *goes deep in the moment*.
 
   Then hand it back with a couple of concrete openers, grounded in what you already
   know from their repo — for example:
@@ -145,24 +145,24 @@ feedback flow, together:
    the topics and touchpoints, then confirm it can actually run:
 
    ```bash
-   scouti request POST /projects/PID/topics @topic.json
-   scouti request POST /projects/PID/touchpoints @touchpoint.json
-   scouti request GET  /projects/PID/verify
+   founderping request POST /projects/PID/topics @topic.json
+   founderping request POST /projects/PID/touchpoints @touchpoint.json
+   founderping request GET  /projects/PID/verify
    ```
 
    Exact fields, limits, and payload shapes: [`./api.md`](./api.md).
 
 ### Task 3 — Monitor & analyze the feedback
 
-Help the developer make sense of what's coming back — half of Scouti's value is here,
+Help the developer make sense of what's coming back — half of FounderPing's value is here,
 not just in wiring it up.
 
 1. **Pull and filter.** Read what users said and slice it:
 
    ```bash
-   scouti request GET "/projects/PID/status?window=7d"                 # volume, depth, top tags, alerts
-   scouti request GET "/projects/PID/conversations?status=summarized"  # summarized sessions + Points
-   scouti request GET "/projects/PID/users"                            # who has given feedback
+   founderping request GET "/projects/PID/status?window=7d"                 # volume, depth, top tags, alerts
+   founderping request GET "/projects/PID/conversations?status=summarized"  # summarized sessions + Points
+   founderping request GET "/projects/PID/users"                            # who has given feedback
    ```
 
    Conversations filter by date, tag, sentiment, quality, topic, and full-text `q`
@@ -184,7 +184,7 @@ on retries.
 
 ## Why this matters
 
-Scouti exists for one thing: to help the developer hear **more feedback, and deeper
+FounderPing exists for one thing: to help the developer hear **more feedback, and deeper
 feedback**, from their users. Most teams leave that value on the table — either they
 don't yet feel how much good user feedback is worth, or they do but don't know where
 to start: which questions to ask, at which moments, and often they haven't even
@@ -200,18 +200,18 @@ users better than they knew to ask for. (Design craft for this: [`./guide.md`](.
 
 ## Keeping up to date
 
-When the developer asks to update Scouti, or you're working from an older skill copy:
+When the developer asks to update FounderPing, or you're working from an older skill copy:
 
 1. **Pull the latest skill bundle** from the release and replace the project's skill
-   folder (e.g. `.claude/skills/scouti/`):
+   folder (e.g. `.claude/skills/founderping/`):
 
    ```bash
-   curl -fsSL "https://github.com/scouti-chat/scouti/releases/latest/download/skill.tar.gz" -o /tmp/skill.tar.gz
-   tar -xzf /tmp/skill.tar.gz -C /path/to/your/skills/scouti
+   curl -fsSL "https://github.com/founderping/founderping/releases/latest/download/skill.tar.gz" -o /tmp/skill.tar.gz
+   tar -xzf /tmp/skill.tar.gz -C /path/to/your/skills/founderping
    ```
 
    Adjust the target path to wherever this project keeps its agent skills.
 
 2. **Pull the latest CLI** using the install block in **Task 1 → Step 0** of the
-   freshly unpacked `SKILL.md` (the `curl … scouti-${os}-${arch}` download). You
+   freshly unpacked `SKILL.md` (the `curl … founderping-${os}-${arch}` download). You
    don't need to sign in again unless the local key was removed.

@@ -1,15 +1,15 @@
-# Scouti devkit — release packaging.
+# FounderPing devkit — release packaging.
 #
 # `make` (a.k.a. `make dist`) builds everything we ship into ./dist at the repo
 # root, ready to grab and upload to a GitHub release by hand:
-#   - scouti-<os>-<arch>[.exe]      raw CLI binary per platform (direct download)
-#   - scouti-<os>-<arch>.tar.gz     CLI archive per platform (holds `scouti[.exe]`)
-#   - skill.tar.gz                  the installable skill bundle
+#   - founderping-<os>-<arch>[.exe]      raw CLI binary per platform (direct download)
+#   - founderping-<os>-<arch>.tar.gz     CLI archive per platform (holds `founderping[.exe]`)
+#   - skill.tar.gz                       the installable skill bundle
 #
 # The Go module lives in ./cli; the skill sources live in ./skill (run
 # `sc sync_assets` in the main repo first so skill/guide.md + skill/api.md exist).
 
-BINARY    := scouti
+BINARY    := founderping
 DIST      := dist
 CLI_DIR   := cli
 SKILL_DIR := skill
@@ -35,7 +35,7 @@ dist: clean cli skill
 	@echo "-> $(DIST)/"
 	@ls -1 $(DIST)
 
-# One raw binary + one .tar.gz (holding `scouti[.exe]`) per platform.
+# One raw binary + one .tar.gz (holding `founderping[.exe]`) per platform.
 cli:
 	@mkdir -p $(DIST)
 	@for p in $(PLATFORMS); do \
@@ -57,7 +57,7 @@ skill:
 	@echo "  skill  skill.tar.gz"
 	@tar -czf $(DIST)/skill.tar.gz -C $(SKILL_DIR) $(SKILL_FILES)
 
-# Host build for local use (outputs ./cli/scouti; not part of a release).
+# Host build for local use (outputs ./cli/founderping; not part of a release).
 build:
 	cd $(CLI_DIR) && go build -trimpath -ldflags "$(LDFLAGS)" -o $(BINARY) .
 

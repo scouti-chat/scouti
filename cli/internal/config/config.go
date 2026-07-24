@@ -8,22 +8,22 @@ import (
 )
 
 // defaultAPIURL is the production origin that serves the /api/v1 gate.
-const defaultAPIURL = "https://scouti.chat"
+const defaultAPIURL = "https://founderping.app"
 
 // dirName is the per-user directory under $HOME that holds credentials.
-const dirName = ".scouti"
+const dirName = ".founderping"
 
-// APIBaseURL returns the API origin without a trailing slash. SCOUTI_API_URL
+// APIBaseURL returns the API origin without a trailing slash. FOUNDERPING_API_URL
 // overrides it for staging / local development.
 func APIBaseURL() string {
-	v := os.Getenv("SCOUTI_API_URL")
+	v := os.Getenv("FOUNDERPING_API_URL")
 	if v == "" {
 		v = defaultAPIURL
 	}
 	return strings.TrimRight(v, "/")
 }
 
-// Dir is the config directory (~/.scouti).
+// Dir is the config directory (~/.founderping).
 func Dir() (string, error) {
 	home, err := os.UserHomeDir()
 	if err != nil {
@@ -32,7 +32,7 @@ func Dir() (string, error) {
 	return filepath.Join(home, dirName), nil
 }
 
-// CredentialsPath is the file that stores the access key (~/.scouti/credentials.json).
+// CredentialsPath is the file that stores the access key (~/.founderping/credentials.json).
 func CredentialsPath() (string, error) {
 	dir, err := Dir()
 	if err != nil {

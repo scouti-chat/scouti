@@ -8,8 +8,8 @@ import (
 	"os"
 	"strings"
 
-	"github.com/scouti-chat/scouti/cli/internal/api"
-	"github.com/scouti-chat/scouti/cli/internal/creds"
+	"github.com/founderping/founderping/cli/internal/api"
+	"github.com/founderping/founderping/cli/internal/creds"
 )
 
 // Request forwards one authenticated call to /api/v1 and prints the response
@@ -21,11 +21,11 @@ func Request(args []string) int {
 		return fail(err)
 	}
 	if key == "" {
-		fmt.Fprintln(os.Stderr, "Not logged in. Run `scouti login` first (or set SCOUTI_ACCESS_KEY).")
+		fmt.Fprintln(os.Stderr, "Not logged in. Run `founderping login` first (or set FOUNDERPING_ACCESS_KEY).")
 		return 1
 	}
 	if len(args) < 2 {
-		fmt.Fprintln(os.Stderr, "Usage: scouti request <METHOD> <PATH> [body]")
+		fmt.Fprintln(os.Stderr, "Usage: founderping request <METHOD> <PATH> [body]")
 		fmt.Fprintln(os.Stderr, "  body: path/to/file.json | @file.json | - (stdin) | '<inline json>'")
 		return 2
 	}

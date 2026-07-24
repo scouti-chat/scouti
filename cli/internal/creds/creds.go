@@ -1,4 +1,4 @@
-// Package creds persists and resolves the developer's Scouti access key (UAK).
+// Package creds persists and resolves the developer's FounderPing access key (UAK).
 // The key is secret: it is written owner-only and never printed by the CLI.
 package creds
 
@@ -6,10 +6,10 @@ import (
 	"encoding/json"
 	"os"
 
-	"github.com/scouti-chat/scouti/cli/internal/config"
+	"github.com/founderping/founderping/cli/internal/config"
 )
 
-// Credentials is the on-disk shape at ~/.scouti/credentials.json.
+// Credentials is the on-disk shape at ~/.founderping/credentials.json.
 type Credentials struct {
 	// AccessKey is the user access key (uak_...). It acts as a long-lived
 	// refresh credential; the gate exchanges it for short-lived tokens.
@@ -37,7 +37,7 @@ func Read() (*Credentials, error) {
 	return &c, nil
 }
 
-// Write persists credentials, creating ~/.scouti (0700) and the file (0600) so
+// Write persists credentials, creating ~/.founderping (0700) and the file (0600) so
 // the key stays readable only by its owner.
 func Write(c Credentials) error {
 	dir, err := config.Dir()
@@ -62,10 +62,10 @@ func Write(c Credentials) error {
 	return os.Chmod(path, 0o600)
 }
 
-// ResolveAccessKey returns the key to authenticate with. SCOUTI_ACCESS_KEY (for
+// ResolveAccessKey returns the key to authenticate with. FOUNDERPING_ACCESS_KEY (for
 // CI) takes precedence over the stored file. Empty string means "not logged in".
 func ResolveAccessKey() (string, error) {
-	if k := os.Getenv("SCOUTI_ACCESS_KEY"); k != "" {
+	if k := os.Getenv("FOUNDERPING_ACCESS_KEY"); k != "" {
 		return k, nil
 	}
 	c, err := Read()

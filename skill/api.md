@@ -1,11 +1,11 @@
-# Scouti API (`/api/v1`)
+# FounderPing API (`/api/v1`)
 
-The gate every agent and the `scouti` CLI talk to. One base URL, one auth header,
-one predictable envelope. All calls below are shown as `scouti request`, but the
+The gate every agent and the `founderping` CLI talk to. One base URL, one auth header,
+one predictable envelope. All calls below are shown as `founderping request`, but the
 CLI is just a thin forwarder — the HTTP contract is identical if you call it
 directly.
 
-- **Base URL:** `https://scouti.chat/api/v1` (override with `SCOUTI_API_URL`).
+- **Base URL:** `https://founderping.app/api/v1` (override with `FOUNDERPING_API_URL`).
 - **Auth:** `Authorization: Bearer <access-key>` on every call. The CLI attaches
   it for you; you never pass it by hand.
 - **Content type:** requests and responses are JSON.
@@ -15,7 +15,7 @@ directly.
 - **Success** → the resource itself, no wrapper. `200` for reads/updates, `201`
   for creates, `{ "deleted": true }` for deletes.
 - **Error** → `{ "error": { "code": "...", "message": "..." } }` with a non-2xx
-  status. `scouti request` prints this and exits non-zero.
+  status. `founderping request` prints this and exits non-zero.
 
 | Status | `code`            | Meaning                                        |
 | ------ | ----------------- | ---------------------------------------------- |
@@ -28,8 +28,10 @@ directly.
 
 ## Conventions
 
-- Everything except `/me` and the auth endpoints is **project-scoped** under
-  `/projects/{projectId}/…`. Get `projectId` from `GET /me`.
+- Everything except `/me`, project creation, and the auth endpoints is
+  **project-scoped** under `/projects/{projectId}/…`. Get `projectId` from
+  `GET /me` — and if the org has none yet, create one first (see *Create a
+  project*).
 - A wrong or inaccessible `projectId` (or `topicId` / `touchpointId`) always
   returns `404 not_found` — never a `200` with empty or zeroed data. So zeros in
   a `status` / list response mean "no activity yet", not "bad id". If you get a
@@ -43,6 +45,7 @@ directly.
 | Method & path | Purpose |
 | --- | --- |
 | `GET /me` | List orgs/projects you can act on |
+| `POST /orgs/{orgId}/projects` | Create a project (choose the widget identity mode) |
 | `GET /projects/{id}` | Read a project (name, domains, metadata, doc) |
 | `PATCH /projects/{id}` | Update name / domains / metadata |
 | `GET·PATCH /projects/{id}/doc` | Read/replace the product doc (plain text) |
@@ -69,7 +72,7 @@ directly.
 Your first call after login. Returns the orgs and projects you can act on.
 
 ```bash
-scouti request GET /me
+founderping request GET /me
 ```
 
 ```json
@@ -86,6 +89,47 @@ scouti request GET /me
 }
 ```
 
+A freshly-provisioned account has an **org but no project** yet
+(`"projects": []`) — first login and `founderping login` provision only the org.
+Create the project yourself before any project-scoped call (next).
+
+---
+
+## Create a project
+
+Your first setup step. Pick the **widget identity mode** *with the user*, then
+everything else (product doc, topics, touchpoints, extra keys) hangs off the
+project this returns.
+
+### `POST /orgs/{orgId}/projects`
+
+Create a project under an org you own (`orgId` comes from `GET /me`).
+
+| Field | Type | Notes |
+| --- | --- | --- |
+| `name` | string | **Required.** The project / app name; also the name the widget uses for the product. |
+| `mode` | `brand` \| `founder` | Widget identity — who the AI speaks *as* (see below). Default `brand`. |
+| `founderName` | string | **Required when `mode` is `founder`** — the name the AI presents itself as. Ignored otherwise. |
+| `doc` | string | Optional product doc (plain text; same content as `PATCH /projects/{id}/doc`). Grounds every conversation — worth seeding now, and editable later. |
+
+**Choosing the mode — ask the user which voice fits their product:**
+
+- **`brand`** (default) — the widget talks as an **AI feedback assistant for the product team** ("I'm the AI assistant for _App_; the team reads every chat"). Neutral and safe for any product; needs only `name`. Pick this when there's no single public founder or the team prefers a product voice.
+- **`founder`** — the widget talks as the **founder's AI stand-in** ("I'm _Alice_'s AI"). Warmer and more personal, so users feel they're talking almost directly to the founder — which tends to draw more candid feedback. Requires `founderName`. Pick this for founder-led / early-stage products.
+
+> **Images aren't set here.** Every project starts with a **default avatar**, and `founderName` only changes how the AI refers to itself in conversation — it uploads nothing. Custom logo / bot avatar and accent color aren't available through the API yet; the user sets those in the **Dashboard** (Project Settings → Morphing).
+
+```bash
+founderping request POST /orgs/ORG_ID/projects '{"name":"Acme","mode":"brand","doc":"# Acme\n\nAcme helps teams …"}'
+founderping request POST /orgs/ORG_ID/projects '{"name":"Acme","mode":"founder","founderName":"Alice"}'
+```
+
+→ `201` with the created project (`{ id, name, organization_id, metadata, … }`).
+It already has a **Default Project Key**, a starter reactive topic plus example
+proactive topics, and the widget introduction seeded for the mode you chose —
+all editable afterward. Use the returned `id` for every project-scoped call
+below.
+
 ---
 
 ## Project & basic config
@@ -93,7 +137,7 @@ scouti request GET /me
 ### `GET /projects/{id}`
 
 ```bash
-scouti request GET /projects/PROJECT_ID
+founderping request GET /projects/PROJECT_ID
 ```
 
 Returns `{ id, name, organization_id, metadata, client_auth, doc, created_at }`.
@@ -110,7 +154,7 @@ Update any of `name`, `domains` (allow-list for the widget, ≤ 50 entries), or
 set them through their dedicated endpoints below.
 
 ```bash
-scouti request PATCH /projects/PROJECT_ID '{"domains":["example.com","app.example.com"]}'
+founderping request PATCH /projects/PROJECT_ID '{"domains":["example.com","app.example.com"]}'
 ```
 
 ### `GET·PATCH /projects/{id}/doc`
@@ -119,8 +163,8 @@ The **product doc** that grounds every Scout conversation. Send and receive
 **plain text** — the server handles base64 for storage. Max 20,000 characters.
 
 ```bash
-scouti request GET   /projects/PROJECT_ID/doc
-scouti request PATCH /projects/PROJECT_ID/doc '{"doc":"# My Product\n\nWhat it does, who it is for, current status…"}'
+founderping request GET   /projects/PROJECT_ID/doc
+founderping request PATCH /projects/PROJECT_ID/doc '{"doc":"# My Product\n\nWhat it does, who it is for, current status…"}'
 ```
 
 Both return `{ "doc": "..." }` (plain text).
@@ -139,7 +183,7 @@ every node needs a non-empty `label` (≤ 60 chars); `description` ≤ 500 chars
 `color` optional. `PATCH` replaces the whole tree.
 
 ```bash
-scouti request PATCH /projects/PROJECT_ID/tag-tree @tag-tree.json
+founderping request PATCH /projects/PROJECT_ID/tag-tree @tag-tree.json
 ```
 
 Returns `{ "tag_tree": ... }`.
@@ -150,7 +194,7 @@ Returns `{ "tag_tree": ... }`.
 keep an ear out for. `PATCH` replaces the whole list; blank entries are dropped.
 
 ```bash
-scouti request PATCH /projects/PROJECT_ID/attention-list '{"attention_list":["pricing confusion","mobile bugs"]}'
+founderping request PATCH /projects/PROJECT_ID/attention-list '{"attention_list":["pricing confusion","mobile bugs"]}'
 ```
 
 Returns `{ "attention_list": [...] }`.
@@ -163,9 +207,9 @@ Publishable keys embedded in front-end code — safe to expose, unlike your acce
 key.
 
 ```bash
-scouti request GET    /projects/PROJECT_ID/keys
-scouti request POST   /projects/PROJECT_ID/keys '{"name":"web"}'       # → 201, { key, name, ... }
-scouti request DELETE "/projects/PROJECT_ID/keys?key=pk_live_xxx"      # → { deleted: true }
+founderping request GET    /projects/PROJECT_ID/keys
+founderping request POST   /projects/PROJECT_ID/keys '{"name":"web"}'       # → 201, { key, name, ... }
+founderping request DELETE "/projects/PROJECT_ID/keys?key=pk_live_xxx"      # → { deleted: true }
 ```
 
 ---
@@ -208,7 +252,7 @@ proactive topics use all four.
 `direct_link_enabled`).
 
 ```bash
-scouti request POST /projects/PROJECT_ID/topics @topic.json
+founderping request POST /projects/PROJECT_ID/topics @topic.json
 ```
 
 ```json
@@ -231,15 +275,15 @@ scouti request POST /projects/PROJECT_ID/topics @topic.json
 Patch any subset of the fields in the table above (at least one required).
 
 ```bash
-scouti request PATCH  /projects/PROJECT_ID/topics/TOPIC_ID '{"status":"archived"}'
-scouti request PATCH  /projects/PROJECT_ID/topics/TOPIC_ID '{"hint":{"requirements":"Only ask on mobile."}}'
-scouti request DELETE /projects/PROJECT_ID/topics/TOPIC_ID
+founderping request PATCH  /projects/PROJECT_ID/topics/TOPIC_ID '{"status":"archived"}'
+founderping request PATCH  /projects/PROJECT_ID/topics/TOPIC_ID '{"hint":{"requirements":"Only ask on mobile."}}'
+founderping request DELETE /projects/PROJECT_ID/topics/TOPIC_ID
 ```
 
-**Direct link:** enable it, and the topic opens at `https://scouti.chat/t/TOPIC_ID`:
+**Direct link:** enable it, and the topic opens at `https://founderping.app/t/TOPIC_ID`:
 
 ```bash
-scouti request PATCH /projects/PROJECT_ID/topics/TOPIC_ID '{"direct_link_enabled":true}'
+founderping request PATCH /projects/PROJECT_ID/topics/TOPIC_ID '{"direct_link_enabled":true}'
 ```
 
 ---
@@ -276,10 +320,10 @@ A **touchpoint** is where/when topics are surfaced in your product. Rows are
 | `conditions` | array | Gates on when the topic may fire. Each item needs a `type` of `time_range`, `weekdays`, or `cooldown`; its other params are passed through as-is. |
 
 ```bash
-scouti request GET    /projects/PROJECT_ID/touchpoints
-scouti request POST   /projects/PROJECT_ID/touchpoints @touchpoint.json
-scouti request PATCH  /projects/PROJECT_ID/touchpoints/TP_ID '{"status":"disabled"}'
-scouti request DELETE /projects/PROJECT_ID/touchpoints/TP_ID
+founderping request GET    /projects/PROJECT_ID/touchpoints
+founderping request POST   /projects/PROJECT_ID/touchpoints @touchpoint.json
+founderping request PATCH  /projects/PROJECT_ID/touchpoints/TP_ID '{"status":"disabled"}'
+founderping request DELETE /projects/PROJECT_ID/touchpoints/TP_ID
 ```
 
 ```json
@@ -313,7 +357,7 @@ optional.
 | `offset` | default `0` |
 
 ```bash
-scouti request GET "/projects/PROJECT_ID/conversations?status=summarized&limit=20"
+founderping request GET "/projects/PROJECT_ID/conversations?status=summarized&limit=20"
 ```
 
 ---
@@ -326,7 +370,7 @@ The pool of end-users you can reach out to. Params: `page` (1), `page_size` (12)
 `query`/`q`, `sort` (`time_desc`).
 
 ```bash
-scouti request GET "/projects/PROJECT_ID/users?page=1&page_size=20"
+founderping request GET "/projects/PROJECT_ID/users?page=1&page_size=20"
 ```
 
 ### `POST /projects/{id}/outreach`
@@ -335,7 +379,7 @@ Start a new outreach conversation on a user's most recent deliverable session.
 Pick `session_ids` from the users list.
 
 ```bash
-scouti request POST /projects/PROJECT_ID/outreach '{"message":"Hi! Got 30s for a quick question?","session_ids":["sess-uuid"]}'
+founderping request POST /projects/PROJECT_ID/outreach '{"message":"Hi! Got 30s for a quick question?","session_ids":["sess-uuid"]}'
 ```
 
 → `201 { conversation_id, session_id, pending_count, queued_at }`.
@@ -345,7 +389,7 @@ scouti request POST /projects/PROJECT_ID/outreach '{"message":"Hi! Got 30s for a
 Append another message to an existing outreach thread.
 
 ```bash
-scouti request POST /projects/PROJECT_ID/conversations/CONV_ID/outreach '{"message":"Following up — still keen to hear your thoughts!"}'
+founderping request POST /projects/PROJECT_ID/conversations/CONV_ID/outreach '{"message":"Following up — still keen to hear your thoughts!"}'
 ```
 
 → `{ pending_count, queued_at }`.
@@ -360,7 +404,7 @@ A Mission-Control snapshot for a time `window` (`7d`, `2w`, `1m`, or a bare day
 count; default `7d`).
 
 ```bash
-scouti request GET "/projects/PROJECT_ID/status?window=7d"
+founderping request GET "/projects/PROJECT_ID/status?window=7d"
 ```
 
 → `{ window_days, depth, users, top_tags, notifications }`.
@@ -370,7 +414,7 @@ scouti request GET "/projects/PROJECT_ID/status?window=7d"
 "Is the widget wired up and can it run?" Fix anything `false`, then re-run.
 
 ```bash
-scouti request GET /projects/PROJECT_ID/verify
+founderping request GET /projects/PROJECT_ID/verify
 ```
 
 ```json
@@ -389,9 +433,9 @@ scouti request GET /projects/PROJECT_ID/verify
 
 ## Auth (device flow) — handled by the CLI
 
-You normally never call these; `scouti login` and the browser approval page do.
+You normally never call these; `founderping login` and the browser approval page do.
 Documented for completeness.
 
 - `POST /auth/device/start` → `{ device_code, user_code, verification_uri, verification_uri_complete, interval, expires_in }`. Unauthenticated.
 - `POST /auth/device/token` body `{ device_code }` → `{ status: "pending", interval }` while waiting, or `{ access_key, token_type: "uak", user_id }` once approved. Unauthenticated; the key is returned exactly once.
-- `POST /auth/device/approve` body `{ user_code }` → `{ approved: true }`. Requires a logged-in browser session; also provisions a default workspace.
+- `POST /auth/device/approve` body `{ user_code }` → `{ approved: true }`. Requires a logged-in browser session; also provisions a default **organization** (no project — create one with *Create a project*).

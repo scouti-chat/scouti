@@ -1,5 +1,5 @@
 // Package device implements the OAuth-style device authorization flow used by
-// `scouti login`. The CLI starts a request, the developer approves it in a
+// `founderping login`. The CLI starts a request, the developer approves it in a
 // browser, and the CLI polls with a private device_code to receive the key.
 // The high-entropy device_code never leaves the machine; the short user_code is
 // only shown so the developer can eyeball-match it on the approval page.
@@ -16,7 +16,7 @@ import (
 	"runtime"
 	"time"
 
-	"github.com/scouti-chat/scouti/cli/internal/config"
+	"github.com/founderping/founderping/cli/internal/config"
 )
 
 // requestTimeout bounds each individual device-flow HTTP call so a stalled

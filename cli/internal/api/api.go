@@ -1,4 +1,4 @@
-// Package api makes authenticated calls to the Scouti /api/v1 gate. The gate
+// Package api makes authenticated calls to the FounderPing /api/v1 gate. The gate
 // resolves the access key to a user and enforces row-level security, so the CLI
 // only needs to attach the bearer token and relay method/path/body.
 package api
@@ -9,7 +9,7 @@ import (
 	"net/http"
 	"strings"
 
-	"github.com/scouti-chat/scouti/cli/internal/config"
+	"github.com/founderping/founderping/cli/internal/config"
 )
 
 // Response is a decoded HTTP response: raw body plus the status code.

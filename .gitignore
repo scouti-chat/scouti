@@ -2,8 +2,8 @@
 /dist/
 
 # Go build output
-/cli/scouti
-/cli/scouti.exe
+/cli/founderping
+/cli/founderping.exe
 *.test
 *.out
 

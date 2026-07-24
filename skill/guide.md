@@ -1,14 +1,14 @@
-# Scouti — Product, Configuration & Implementation Guide
+# FounderPing — Product, Configuration & Implementation Guide
 
-## 1. What Scouti is
+## 1. What FounderPing is
 
-Scouti is an **AI-powered user-feedback platform for product teams**. It helps you hear from the people who use your product—not through long surveys or static forms, but through **short, natural conversations** (voice or text) that an AI leads on your behalf. Each chat is turned into **structured, searchable insight**—what was said, how the user felt, what matters—so you can prioritize and act without manually reading every submission.
+FounderPing is an **AI-powered user-feedback platform for product teams**. It helps you hear from the people who use your product—not through long surveys or static forms, but through **short, natural conversations** (voice or text) that an AI leads on your behalf. Each chat is turned into **structured, searchable insight**—what was said, how the user felt, what matters—so you can prioritize and act without manually reading every submission.
 
-Think of Scouti as a **virtual team working for you**: you set the goals and rules; the team talks to users, brings back signal, and organizes it in one place.
+Think of FounderPing as a **virtual team working for you**: you set the goals and rules; the team talks to users, brings back signal, and organizes it in one place.
 
 ### Problems it addresses
 
-Most teams don’t have one feedback problem—they have **a patchwork of channels that each fail in a different way**. Scouti is aimed at replacing that patchwork, not adding another inbox.
+Most teams don’t have one feedback problem—they have **a patchwork of channels that each fail in a different way**. FounderPing is aimed at replacing that patchwork, not adding another inbox.
 
 **Reach doesn’t scale**
 
@@ -28,7 +28,7 @@ Most teams don’t have one feedback problem—they have **a patchwork of channe
 - **Synthesis doesn’t scale.** Tagging, prioritizing, and tying feedback to a user stays manual, so backlogs outgrow insight.
 - **Rolling your own feedback UX is costly.** Every new question, audience, or trigger still means more frontend work and redeploys.
 
-Scouti is built to replace that loop: **reach users in the product (and beyond), let AI dig deeper in the moment, and put summarized, tagged signal in one Dashboard**—so you’re not guessing from stars, silence, or scattered threads.
+FounderPing is built to replace that loop: **reach users in the product (and beyond), let AI dig deeper in the moment, and put summarized, tagged signal in one Dashboard**—so you’re not guessing from stars, silence, or scattered threads.
 
 ---
 
@@ -36,22 +36,25 @@ Scouti is built to replace that loop: **reach users in the product (and beyond),
 
 This section walks the full lifecycle from a developer’s perspective: from signing up, through configuring what to ask, to reading and acting on what comes back. Each step links to its deep-dive section.
 
-> **Two equivalent ways to operate Scouti.** Everything below can be done either in the **Dashboard** (point-and-click) or through the **`scouti` CLI / REST API** (`/api/v1`) that AI coding agents drive — projects, the product doc, topics, touchpoints, widget keys, allowed domains, outreach, and status are all reachable both ways. Pick whichever fits the moment; where it matters, this guide notes both. (For the full CLI/API surface, see the companion **API reference**, `api.md`.)
+> **Two equivalent ways to operate FounderPing.** Everything below can be done either in the **Dashboard** (point-and-click) or through the **`founderping` CLI / REST API** (`/api/v1`) that AI coding agents drive — projects, the product doc, topics, touchpoints, widget keys, allowed domains, outreach, and status are all reachable both ways. Pick whichever fits the moment; where it matters, this guide notes both. (For the full CLI/API surface, see the companion **API reference**, `api.md`.)
 
 ### Fastest setup — one prompt with your coding agent
 
-If you use **Cursor, Claude Code, Codex, Gemini CLI**, or a similar assistant, you can stand up Scouti in **one line** without clicking through the Dashboard first:
+If you use **Cursor, Claude Code, Codex, Gemini CLI**, or a similar assistant, you can stand up FounderPing in **one line** without clicking through the Dashboard first:
 
 1. Open your product's repo in the agent.
-2. Paste a setup prompt—for example: *"Download the Scouti skill from https://github.com/scouti-chat/scouti, follow it, and help me set up Scouti in this project."*
-3. The agent pulls the **Scouti skill** (this guide, the API reference, and setup scripts), walks you through login, creates your project if needed, co-designs Topics and Touchpoints with you, and drops the widget install script plus `mount()` calls into your codebase.
+2. Paste a setup prompt—for example: *"Download the FounderPing skill from https://github.com/founderping/founderping, follow it, and help me set up FounderPing in this project."*
+3. The agent pulls the **FounderPing skill** (this guide, the API reference, and setup scripts), walks you through login, creates your project (picking a widget voice with you), co-designs Topics and Touchpoints with you, and drops the widget install script plus `mount()` calls into your codebase.
 
 Prefer the UI? **Sign up free** and follow the onboarding tutorial in the Dashboard instead—the same end state, step by step.
 
 ### Step 0 — Set up the workspace
 
-1. **Create an Organization and Project.** The Organization is the billing entity; a Project is one product/app you want feedback on.
-2. **Write your product context.** Drop in a free-form description of your product—what it does, who uses it, key terms. Scouti injects this into every conversation so the AI sounds informed instead of generic. You write it in the project's **Playbook**.
+1. **Create your Project — and pick its voice.** The **Organization** (your billing entity) is created for you on signup and `founderping login`; a **Project** is one product/app you want feedback on, and you create it explicitly — in the Dashboard, or with `POST /orgs/{orgId}/projects` (see `api.md`). Creating one carries a choice worth making *with* the user: the widget's **identity mode**, i.e. who the AI speaks *as*.
+  - **Brand** (default) — the widget talks as an AI feedback assistant for the product team. Neutral, fits any product, needs only the app name.
+  - **Founder** — the widget talks as the founder's AI stand-in (“I'm Alice's AI”). More personal, so users feel they're speaking almost directly with the founder, which tends to draw more candid feedback; it needs the founder's name.
+  Ask which fits before creating, and default to Brand if they're unsure. Either way the widget opens with a **default avatar**: uploading a custom logo / bot avatar (and accent color) isn't available through the CLI/API yet, so if they want to brand it, send them to the Dashboard (**Project Settings → Morphing**, see §5.6).
+2. **Write your product context.** Drop in a free-form description of your product—what it does, who uses it, key terms. FounderPing injects this into every conversation so the AI sounds informed instead of generic. You write it in the project's **Playbook**.
 3. **Define your taxonomy.** Set up the **Tag Tree** (how feedback should be labeled) and the **Attention List** (topics that should auto-flag a conversation, e.g. churn, billing, security). This is what turns raw chats into filterable, prioritized signal later (see §5.4–5.5).
 
 ### Step 1 — Decide what to ask (Topics)
@@ -76,7 +79,7 @@ Keep every field tight — a sentence or two each (rough budget: ~30 words for C
 
 A **Reactive Topic** is the open-ended “tell us anything” helper, so it uses just **one** of these — **Requirements**. With no fixed situation, single goal, or scripted flow to pin down, Context, Goal, and Plan are all dropped; only the guard-rails for how the Scout should behave still apply.
 
-You don’t have to write any of this from scratch. You can **co-design the Topic with Scouti’s AI assistant** — describe your goal in a short chat and it drafts the Hint fields and Openings with you — or hand it to **your own AI** with the *“Co-design with your AI”* button, which points your assistant at this guide and has it walk you through the same fields. Everything stays editable by hand.
+You don’t have to write any of this from scratch. You can **co-design the Topic with FounderPing’s AI assistant** — describe your goal in a short chat and it drafts the Hint fields and Openings with you — or hand it to **your own AI** with the *“Co-design with your AI”* button, which points your assistant at this guide and has it walk you through the same fields. Everything stays editable by hand.
 
 ### Step 2 — Decide when and where to ask (reach users)
 
@@ -86,7 +89,7 @@ There are two ways to put a Topic in front of users. Most projects use both.
 
 This is the main path: an embedded widget that brings your Topics to users right inside your app.
 
-1. **Touchpoints — naming the moments.** A **Touchpoint** is a named hook you place in your code at a meaningful moment, e.g. `scouti.mount("post_checkout")`. It’s just a label for “something interesting happened here”; *what* should be asked there is decided later in the Dashboard, not in your code.
+1. **Touchpoints — naming the moments.** A **Touchpoint** is a named hook you place in your code at a meaningful moment, e.g. `founderping.mount("post_checkout")`. It’s just a label for “something interesting happened here”; *what* should be asked there is decided later in the Dashboard, not in your code.
 2. **Bind Topics to Touchpoints (with Conditions).** In the Dashboard (or via the API) you bind one or more Topics to each Touchpoint, so firing that moment can start the right conversation. Bindings can carry **Conditions** that gate when they’re allowed to fire—time windows, weekdays, and per-user cooldowns (see *Appendix A — Touchpoint Condition types* for the full list).
   The **Reactive Topic** doesn’t need a Touchpoint—when enabled it always shows as the sticky “tell us anything” button. **Proactive Topics** are the ones you bind to Touchpoints so they pop up at the right time.
 3. **Integrate the widget once.** Add the one-line widget script to your product and place your `mount(...)` calls at the moments you named. After this, which Topic fires where, and under what Conditions, is all controlled from the Dashboard (or the API)—no further frontend changes per question. (Concrete snippets, the JavaScript API, and the runtime mechanics—coalesce, Conditions, and Guards—are covered in §4 *Developer integration*.)
@@ -119,7 +122,7 @@ A **Direct Link** is a shareable URL (and QR code) that opens a single Topic in 
 
 ## 3. Designing your feedback program
 
-This chapter is written mainly for you, the AI assistant a developer has brought in to help them get more out of Scouti — though it’s really about *their* product, so a developer reading along will get just as much from it. (“you” here means the assistant; elsewhere in this guide it means the developer.) Treat it as background for a role you can play, not a procedure you have to run: most of the time the developer arrives with a concrete question, and helping with that comes first. What follows is how, around that, you can also help them shape a feedback program worth having.
+This chapter is written mainly for you, the AI assistant a developer has brought in to help them get more out of FounderPing — though it’s really about *their* product, so a developer reading along will get just as much from it. (“you” here means the assistant; elsewhere in this guide it means the developer.) Treat it as background for a role you can play, not a procedure you have to run: most of the time the developer arrives with a concrete question, and helping with that comes first. What follows is how, around that, you can also help them shape a feedback program worth having.
 
 ### 3.1 Why proactive, in-product feedback is worth it
 
@@ -162,51 +165,51 @@ Follow their lead on how far to go on any given thread; Your default stance is *
 
 One principle runs through all of it: **your code only names moments—the Dashboard decides what to ask and when.** You integrate once; from then on you add, retarget, or retire questions entirely from the Dashboard, with no frontend changes or redeploys.
 
-**Best practice: lay down Touchpoints early, configure Topics later.** The decoupling above pays off most when you front-load the code work: walk through your product once and place a `scouti.mount(...)` at every meaningful moment you might ever want feedback from—checkout complete, onboarding milestones, error states, feature discovery, a settings save. Register each name in the Dashboard (or let the first `mount` create it). You don't have to bind a Topic to every hook on day one; leave bindings empty until you're ready. What you gain is a stable map of moments that product, growth, and support can wire up entirely from the Dashboard: create a Proactive Topic, bind it to `post_checkout`, tune Conditions and weights, retire last quarter's question and point the same hook at a new one—all without another frontend change or redeploy. The slow path is the opposite: adding a new `mount()` every time someone wants a different question at a new moment, which puts you back in the redeploy-every-time loop Scouti is meant to replace.
+**Best practice: lay down Touchpoints early, configure Topics later.** The decoupling above pays off most when you front-load the code work: walk through your product once and place a `founderping.mount(...)` at every meaningful moment you might ever want feedback from—checkout complete, onboarding milestones, error states, feature discovery, a settings save. Register each name in the Dashboard (or let the first `mount` create it). You don't have to bind a Topic to every hook on day one; leave bindings empty until you're ready. What you gain is a stable map of moments that product, growth, and support can wire up entirely from the Dashboard: create a Proactive Topic, bind it to `post_checkout`, tune Conditions and weights, retire last quarter's question and point the same hook at a new one—all without another frontend change or redeploy. The slow path is the opposite: adding a new `mount()` every time someone wants a different question at a new moment, which puts you back in the redeploy-every-time loop FounderPing is meant to replace.
 
 ### 4.1 The install script
 
 Every integration starts with one `<script>` snippet. Copy it verbatim from the Dashboard (**Scout Team → Web Widget**)—it already has your project key filled in. (Working from the CLI/API instead? Mint a key with `POST /projects/{id}/keys` and drop it into the `data-project-key` slot yourself.)
 
 ```html
-<script>!function(u,d){var w=window,e=document;if(w.scouti)return;var v,p=new Promise(r=>v=r);w.__sr=v;w.scouti=new Proxy({},{get:(_,m)=>function(){var a=w.__sa,g=[...arguments];return a?a[m].apply(a,g):p.then(()=>w.__sa[m].apply(w.__sa,g))}});var s=e.createElement("script");s.async=1;s.src=u;if(d)for(var k in d)s.setAttribute(k,d[k]);e.head.appendChild(s)}("https://scouti.chat/scouti-widget.umd.js",{"data-project-key":"pk_your_project_key"});</script>
+<script>!function(u,d){var w=window,e=document;if(w.founderping)return;var v,p=new Promise(r=>v=r);w.__sr=v;w.founderping=new Proxy({},{get:(_,m)=>function(){var a=w.__sa,g=[...arguments];return a?a[m].apply(a,g):p.then(()=>w.__sa[m].apply(w.__sa,g))}});var s=e.createElement("script");s.async=1;s.src=u;if(d)for(var k in d)s.setAttribute(k,d[k]);e.head.appendChild(s)}("https://founderping.app/founderping-widget.umd.js",{"data-project-key":"pk_your_project_key"});</script>
 ```
 
 It's a tiny self-contained bootstrapper. When it runs it:
 
-- **Registers `window.scouti` synchronously** as a stand-in that **queues** any calls, then kicks off an async download of the real Widget bundle and replays the queue once it's ready. This is the queue mechanism that makes the API safe to call before the Widget has finished loading (see §4.2).
+- **Registers `window.founderping` synchronously** as a stand-in that **queues** any calls, then kicks off an async download of the real Widget bundle and replays the queue once it's ready. This is the queue mechanism that makes the API safe to call before the Widget has finished loading (see §4.2).
 - **Carries your project key** as the `data-project-key` argument, which it forwards to the Widget so it loads the right project's config.
 - **Mounts the Widget in an isolated iframe**, so it can't clash with your page's styles or scripts.
 
 **Where to put it.** We recommend the `<head>` of a global layout/template, so it runs as early as possible on every page. But it doesn't have to be there—the end of `<body>`, a tag manager, or any lazy-loaded slot works too. There's only one rule:
 
-> Before you call `scouti.mount(...)` / `scouti.setUser(...)` on a page, this snippet must have run on that page.
+> Before you call `founderping.mount(...)` / `founderping.setUser(...)` on a page, this snippet must have run on that page.
 
-You don't need to wait for the Widget itself to finish loading—because of the queue, calls made early are held and replayed in order, so the bundle downloading a little later is fine. What you must avoid is calling `scouti.`* on a page where the snippet was never included.
+You don't need to wait for the Widget itself to finish loading—because of the queue, calls made early are held and replayed in order, so the bundle downloading a little later is fine. What you must avoid is calling `founderping.`* on a page where the snippet was never included.
 
-**If your site sends a Content-Security-Policy (CSP).** A CSP on the embedding page can block the Widget before it ever runs, so Scouti's two origins have to be allowlisted:
+**If your site sends a Content-Security-Policy (CSP).** A CSP on the embedding page can block the Widget before it ever runs, so FounderPing's two origins have to be allowlisted:
 
-- `script-src` (which also governs `script-src-elem`) must allow `https://scouti.chat`, where the loader bundle is served—otherwise the browser refuses to download it.
-- `connect-src` must allow `https://*.scouti.chat`, since the Widget bootstraps and streams replies from Scouti's backend services, which run on subdomains of `scouti.chat`.
+- `script-src` (which also governs `script-src-elem`) must allow `https://founderping.app`, where the loader bundle is served—otherwise the browser refuses to download it.
+- `connect-src` must allow `https://*.founderping.app`, since the Widget bootstraps and streams replies from FounderPing's backend services, which run on subdomains of `founderping.app`.
 
 ```
-script-src  https://scouti.chat;
-connect-src https://*.scouti.chat;
+script-src  https://founderping.app;
+connect-src https://*.founderping.app;
 ```
 
-The bundle sits on the apex `scouti.chat` while the backend runs on `scouti.chat` subdomains, and a `*.scouti.chat` wildcard does **not** match the apex—so the two directives intentionally name different hosts. A page with no CSP needs none of this. Note this is the *embedding site* granting permission to load Scouti, and is the mirror image of Scouti's own **Allowed domains** (§5.2), where you grant Scouti permission to accept your site's calls—a working Widget needs both directions.
+The bundle sits on the apex `founderping.app` while the backend runs on `founderping.app` subdomains, and a `*.founderping.app` wildcard does **not** match the apex—so the two directives intentionally name different hosts. A page with no CSP needs none of this. Note this is the *embedding site* granting permission to load FounderPing, and is the mirror image of FounderPing's own **Allowed domains** (§5.2), where you grant FounderPing permission to accept your site's calls—a working Widget needs both directions.
 
 ### 4.2 The JavaScript API
 
-Everything is exposed on the global `window.scouti`. The install script registers a tiny queueing shim **immediately**, so you can call any method right away—calls made before the bundle finishes downloading are queued and replayed in order. The mutating methods return `scouti`, so they chain.
+Everything is exposed on the global `window.founderping`. The install script registers a tiny queueing shim **immediately**, so you can call any method right away—calls made before the bundle finishes downloading are queued and replayed in order. The mutating methods return `founderping`, so they chain.
 
 
 | Call                                     | What it does                                                                                                                                                |
 | ---------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `scouti.mount(name: string)`             | Declares that the named Touchpoint moment occurred and enters it into the arbitration pipeline (see §4.3). Safe to call repeatedly and before load.         |
-| `scouti.setUser({ identifier })`          | Binds the current end user so the Dashboard can cluster their sessions; the session follows this call live. Pass an empty / absent id (e.g. on logout) to drop back to anonymous. |
-| `scouti.hide()`                          | Hides the Widget for now. Unlike a user *close*, this triggers no quiet period.                                                                             |
-| `scouti.destroy()`                       | Tears the Widget instance down entirely.                                                                                                                    |
+| `founderping.mount(name: string)`             | Declares that the named Touchpoint moment occurred and enters it into the arbitration pipeline (see §4.3). Safe to call repeatedly and before load.         |
+| `founderping.setUser({ identifier })`          | Binds the current end user so the Dashboard can cluster their sessions; the session follows this call live. Pass an empty / absent id (e.g. on logout) to drop back to anonymous. |
+| `founderping.hide()`                          | Hides the Widget for now. Unlike a user *close*, this triggers no quiet period.                                                                             |
+| `founderping.destroy()`                       | Tears the Widget instance down entirely.                                                                                                                    |
 
 
 `**mount(name)` is the workhorse.** Place it at the moments you named in the Dashboard. Calling it doesn't guarantee a dialog—the pipeline in §4.3 has the final say.
@@ -217,7 +220,7 @@ Everything is exposed on the global `window.scouti`. The install script register
 
 **One script, loaded once.** Integration is a single `<script>` tag carrying your `data-project-key`. The Widget renders inside an isolated iframe, so it never collides with your page's CSS or JavaScript. On load it performs a one-time **bootstrap**: it pulls your project's Topics, Touchpoint bindings, and any pending Outreach, then caches them locally—so every runtime decision afterward is instant and needs no server round-trip. That cache isn't permanent—it refreshes on a fixed interval (`BOOTSTRAP_EXPIRES_MINUTES`; see **Appendix A.1** for the value), so edits you make in the Dashboard roll out on their own without a redeploy. If your **Reactive Topic** is enabled, its sticky “tell us anything” button appears on its own; no further code is required.
 
-**Touchpoints decouple code from configuration.** A call like `scouti.mount("post_checkout")` doesn't say “show this dialog”—it says *“this named moment just happened.”* Which Topic (if any) fires there, and under which Conditions, is bound in the Dashboard against that name. So a `mount(...)` is a **candidate**, not a command: the runtime may open it, open something else instead, or show nothing at all.
+**Touchpoints decouple code from configuration.** A call like `founderping.mount("post_checkout")` doesn't say “show this dialog”—it says *“this named moment just happened.”* Which Topic (if any) fires there, and under which Conditions, is bound in the Dashboard against that name. So a `mount(...)` is a **candidate**, not a command: the runtime may open it, open something else instead, or show nothing at all.
 
 **From `mount()` to a visible Scout.** When one or more moments fire, the Widget runs them through a short arbitration pipeline before anything appears:
 
@@ -256,7 +259,7 @@ The Dashboard (**Scout Team → Web Widget**) generates ready-to-paste snippets 
 ```html
 <script>
   // Cluster this user's sessions under your own user id.
-  window.scouti.setUser({ identifier: currentUser.id });
+  window.founderping.setUser({ identifier: currentUser.id });
 </script>
 ```
 
@@ -265,7 +268,7 @@ The Dashboard (**Scout Team → Web Widget**) generates ready-to-paste snippets 
 ```html
 <script>
   window.addEventListener("load", () => {
-    window.scouti.mount("home_landing");
+    window.founderping.mount("home_landing");
   });
 </script>
 ```
@@ -277,7 +280,7 @@ The Dashboard (**Scout Team → Web Widget**) generates ready-to-paste snippets 
 <script>
   document
     .querySelector("#feedbackButton")
-    ?.addEventListener("click", () => window.scouti.mount("feedback_button"));
+    ?.addEventListener("click", () => window.founderping.mount("feedback_button"));
 </script>
 ```
 
@@ -289,7 +292,7 @@ The Dashboard (**Scout Team → Web Widget**) generates ready-to-paste snippets 
   const DELAY_MS = 5_000;  // don't pounce immediately
   if (currentUser.plan === "paid") {
     setTimeout(() => {
-      setTimeout(() => window.scouti.mount("engaged_paid_user"), DELAY_MS);
+      setTimeout(() => window.founderping.mount("engaged_paid_user"), DELAY_MS);
     }, DWELL_MS);
   }
 </script>
@@ -309,11 +312,11 @@ The **project key** (`pk_…`) is the public id that ties an embed to your proje
 
 ### 5.2 Allowed domains
 
-For the Web Widget, Scouti only answers requests coming from the **domains you allowlist** (the visitor's browser reports its page origin and the server checks it). List every site that embeds the Widget under **Project Settings** (or via the API); `*.example.com` covers subdomains and `localhost` is allowed while you develop. **An empty allowlist blocks the Widget**—it's the most common reason a freshly-installed Widget never appears, so fill it in before testing on a live domain. Direct Links don't need an entry here: they're served from Scouti's own hosted page.
+For the Web Widget, FounderPing only answers requests coming from the **domains you allowlist** (the visitor's browser reports its page origin and the server checks it). List every site that embeds the Widget under **Project Settings** (or via the API); `*.example.com` covers subdomains and `localhost` is allowed while you develop. **An empty allowlist blocks the Widget**—it's the most common reason a freshly-installed Widget never appears, so fill it in before testing on a live domain. Direct Links don't need an entry here: they're served from FounderPing's own hosted page.
 
 ### 5.3 Documentation (your product context)
 
-This is the plain-language description of your product that Scouti feeds into **every** conversation, so the Scout sounds like it already knows your app instead of asking from scratch. You write it in the project's **Playbook** (or via the API): what the product does, who uses it, the core flow, the words your users use, and the known rough edges. It's the single highest-leverage thing you can set—thin context yields thin, generic interviews—so the Dashboard nudges you whenever it's too short. You don't have to draft it by hand: the **“Ask your AI”** button hands you a ready-made prompt to paste into your coding agent (Claude Code, Codex, Cursor…), which reads your repo and writes a first version for you to refine.
+This is the plain-language description of your product that FounderPing feeds into **every** conversation, so the Scout sounds like it already knows your app instead of asking from scratch. You write it in the project's **Playbook** (or via the API): what the product does, who uses it, the core flow, the words your users use, and the known rough edges. It's the single highest-leverage thing you can set—thin context yields thin, generic interviews—so the Dashboard nudges you whenever it's too short. You don't have to draft it by hand: the **“Ask your AI”** button hands you a ready-made prompt to paste into your coding agent (Claude Code, Codex, Cursor…), which reads your repo and writes a first version for you to refine.
 
 ### 5.4 Tag Tree
 
@@ -325,7 +328,7 @@ The **Attention List** is a short set of high-value signals you want caught the 
 
 ### 5.6 Morphing — match the Widget to your brand
 
-**Morphing** lets the Widget wear your brand instead of Scouti's defaults: pick an **accent color** (it drives the voice and send buttons, the input focus ring, and the “go away” pill) and upload a **bot avatar**, with a live preview as you edit and a one-click reset. It's a **paid-plan feature**—on the free plan the controls are visible but locked—and it's purely cosmetic, so it never changes which questions fire or when. Set it in **Project Settings**.
+**Morphing** lets the Widget wear your brand instead of the defaults: pick an **accent color** (it drives the voice and send buttons, the input focus ring, and the “go away” pill) and upload a **bot avatar**, with a live preview as you edit and a one-click reset. It's available on every plan and purely cosmetic, so it never changes which questions fire or when. Set it in **Project Settings** — this is the one setup step the CLI/API can't do yet (it's an image upload), so a new project always starts on the default avatar until someone brands it here.
 
 ### 5.7 Daily digest
 
@@ -338,7 +341,7 @@ Both default to on, so if the emails stop completely, check your Account toggle 
 
 ### 5.8 Direct Links
 
-A **Direct Link** is a shareable URL—plus a matching QR code—that opens a single Topic in a full-screen hosted chat, with **no widget and no code** on your side. It's how you reach people *outside* your product: drop it in an email, a social post, a support reply, a Discord/community message, or a printed QR. You pick the Topic, optionally put it on a branded subdomain, and share it; whoever opens it lands straight in that conversation, and their replies flow into the same Dashboard as widget feedback. Once a Topic's direct link is enabled, it's reachable at `https://scouti.chat/t/<topic-id>`. Because Scouti hosts the page, Direct Links ignore the allowed-domains list (§5.2) and need no project key on any page of yours—handy for beta cohorts, power users, or one-off campaigns.
+A **Direct Link** is a shareable URL—plus a matching QR code—that opens a single Topic in a full-screen hosted chat, with **no widget and no code** on your side. It's how you reach people *outside* your product: drop it in an email, a social post, a support reply, a Discord/community message, or a printed QR. You pick the Topic, optionally put it on a branded subdomain, and share it; whoever opens it lands straight in that conversation, and their replies flow into the same Dashboard as widget feedback. Once a Topic's direct link is enabled, it's reachable at `https://founderping.app/t/<topic-id>`. Because FounderPing hosts the page, Direct Links ignore the allowed-domains list (§5.2) and need no project key on any page of yours—handy for beta cohorts, power users, or one-off campaigns.
 
 ### 5.9 Points, sentiment & attention flags
 

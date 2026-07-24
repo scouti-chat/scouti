@@ -6,19 +6,19 @@ import (
 	"os"
 	"time"
 
-	"github.com/scouti-chat/scouti/cli/internal/creds"
-	"github.com/scouti-chat/scouti/cli/internal/device"
+	"github.com/founderping/founderping/cli/internal/creds"
+	"github.com/founderping/founderping/cli/internal/device"
 )
 
 // maxLoginWait caps how long the device-authorization flow waits for the
 // developer to approve in the browser. The server's code lives longer, but a
-// forgotten or headless `scouti login` shouldn't hang the terminal — we give up
+// forgotten or headless `founderping login` shouldn't hang the terminal — we give up
 // and tell them to re-run it.
 const maxLoginWait = 5 * time.Minute
 
 // Login authorizes this machine and stores the resulting access key.
 //
-// With --token (or SCOUTI_ACCESS_KEY) it stores a pre-issued key for CI /
+// With --token (or FOUNDERPING_ACCESS_KEY) it stores a pre-issued key for CI /
 // headless use. Otherwise it runs the device-authorization flow: open a browser
 // to sign in and approve, then poll with the private device_code until the key
 // is issued or maxLoginWait elapses.
@@ -70,7 +70,7 @@ func Login(args []string) int {
 
 // timedOut reports that approval didn't arrive within wait and returns exit 1.
 func timedOut(wait time.Duration) int {
-	fmt.Fprintf(os.Stderr, "Login timed out after %s without approval. Run `scouti login` again.\n", wait)
+	fmt.Fprintf(os.Stderr, "Login timed out after %s without approval. Run `founderping login` again.\n", wait)
 	return 1
 }
 
@@ -78,7 +78,7 @@ func save(c creds.Credentials) int {
 	if err := creds.Write(c); err != nil {
 		return fail(err)
 	}
-	fmt.Println("Logged in. Credentials saved to ~/.scouti/credentials.json")
+	fmt.Println("Logged in. Credentials saved to ~/.founderping/credentials.json")
 	return 0
 }
 
@@ -88,5 +88,5 @@ func tokenArg(args []string) string {
 			return args[i+1]
 		}
 	}
-	return os.Getenv("SCOUTI_ACCESS_KEY")
+	return os.Getenv("FOUNDERPING_ACCESS_KEY")
 }

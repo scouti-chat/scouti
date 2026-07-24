@@ -1,9 +1,9 @@
-# scouti CLI
+# founderping CLI
 
 A tiny Go CLI with exactly two jobs:
 
-1. **hold your Scouti access key** securely on this machine, and
-2. **forward authenticated requests** to the Scouti API (`/api/v1`).
+1. **hold your FounderPing access key** securely on this machine, and
+2. **forward authenticated requests** to the FounderPing API (`/api/v1`).
 
 Think of it as "`curl` that carries your key" (à la `gh api`). It ships as a
 single static binary — no Node, no Python, no runtime to install. All product
@@ -12,7 +12,7 @@ learn beyond `login` and `request`.
 
 - Full endpoint reference: [`../skill/api.md`](../skill/api.md)
 - Agent playbook (how to drive an integration end-to-end): [`../skill/SKILL.md`](../skill/SKILL.md)
-- Website: https://scouti.chat
+- Website: https://founderping.app
 
 ---
 
@@ -21,19 +21,19 @@ learn beyond `login` and `request`.
 ### Download a prebuilt binary (recommended)
 
 Grab the file for your platform from the
-[latest release](https://github.com/scouti-chat/scouti/releases/latest) and put
+[latest release](https://github.com/founderping/founderping/releases/latest) and put
 it on your `PATH`:
 
 ```bash
 # Linux / macOS — auto-detects os + arch
 os=$(uname -s | tr '[:upper:]' '[:lower:]')          # linux | darwin
 arch=$(uname -m); [ "$arch" = "x86_64" ] && arch=amd64; [ "$arch" = "aarch64" ] && arch=arm64
-curl -fsSL "https://github.com/scouti-chat/scouti/releases/latest/download/scouti-${os}-${arch}" -o scouti
-chmod +x scouti
-sudo mv scouti /usr/local/bin/            # or anywhere on PATH
+curl -fsSL "https://github.com/founderping/founderping/releases/latest/download/founderping-${os}-${arch}" -o founderping
+chmod +x founderping
+sudo mv founderping /usr/local/bin/            # or anywhere on PATH
 ```
 
-On Windows, download `scouti-windows-amd64.exe` (or `-arm64`) and put it on your
+On Windows, download `founderping-windows-amd64.exe` (or `-arm64`) and put it on your
 `PATH`.
 
 ### Build from source
@@ -42,7 +42,7 @@ Requires Go 1.22+. The Makefile lives at the **devkit root**, so run these from
 there (`cd ..`):
 
 ```bash
-make build      # build ./cli/scouti for the current platform
+make build      # build ./cli/founderping for the current platform
 make dist       # cross-compile every platform + archives + skill → ../dist
 make clean
 ```
@@ -53,21 +53,21 @@ make clean
 
 - Your identity is a **user access key** (`uak_…`). It's secret — treat it like a
   password.
-- The CLI stores it at `~/.scouti/credentials.json` with `0600` permissions and
+- The CLI stores it at `~/.founderping/credentials.json` with `0600` permissions and
   **never prints it**.
-- Every `scouti request` attaches it as `Authorization: Bearer …` automatically.
+- Every `founderping request` attaches it as `Authorization: Bearer …` automatically.
 - In CI or headless jobs, skip the file and pass the key via the
-  `SCOUTI_ACCESS_KEY` environment variable instead.
+  `FOUNDERPING_ACCESS_KEY` environment variable instead.
 
 ---
 
-## `scouti login`
+## `founderping login`
 
 Authorize this machine and save the key.
 
 ```bash
-scouti login                 # interactive: browser device flow
-scouti login --token uak_xxx # store a pre-issued key (CI / headless)
+founderping login                 # interactive: browser device flow
+founderping login --token uak_xxx # store a pre-issued key (CI / headless)
 ```
 
 **Device flow (default).** No key is ever typed or pasted:
@@ -84,12 +84,12 @@ high-entropy code that never leaves your machine.
 
 ---
 
-## `scouti request`
+## `founderping request`
 
 Forward one authenticated call and print the JSON response.
 
 ```
-scouti request <METHOD> <PATH> [body]
+founderping request <METHOD> <PATH> [body]
 ```
 
 - `<METHOD>` — `GET`, `POST`, `PATCH`, `DELETE`, … (case-insensitive).
@@ -123,23 +123,23 @@ and react; don't blindly retry.
 
 ```bash
 # Read
-scouti request GET /me
-scouti request GET "/projects/PID/status?window=7d"
+founderping request GET /me
+founderping request GET "/projects/PID/status?window=7d"
 
 # Create from an inline string
-scouti request POST /projects/PID/keys '{"name":"web"}'
+founderping request POST /projects/PID/keys '{"name":"web"}'
 
 # Create from a file (bare path or @path both work)
-scouti request POST /projects/PID/topics topic.json
-scouti request POST /projects/PID/topics @topic.json
+founderping request POST /projects/PID/topics topic.json
+founderping request POST /projects/PID/topics @topic.json
 
 # Create from stdin
 echo '{"name":"post_checkout","config":{"mode":"proactive"}}' \
-  | scouti request POST /projects/PID/touchpoints -
+  | founderping request POST /projects/PID/touchpoints -
 
 # Update / delete
-scouti request PATCH  /projects/PID/topics/TID '{"status":"archived"}'
-scouti request DELETE "/projects/PID/keys?key=pk_live_xxx"
+founderping request PATCH  /projects/PID/topics/TID '{"status":"archived"}'
+founderping request DELETE "/projects/PID/keys?key=pk_live_xxx"
 ```
 
 See [`../skill/api.md`](../skill/api.md) for every endpoint, its parameters, and
@@ -151,33 +151,33 @@ example payloads.
 
 | Variable | Purpose |
 | --- | --- |
-| `SCOUTI_API_URL` | Override the API origin (default `https://scouti.chat`). Use for staging / local dev. |
-| `SCOUTI_ACCESS_KEY` | Use this key instead of `~/.scouti/credentials.json` (CI / headless). Takes precedence over the file. |
+| `FOUNDERPING_API_URL` | Override the API origin (default `https://founderping.app`). Use for staging / local dev. |
+| `FOUNDERPING_ACCESS_KEY` | Use this key instead of `~/.founderping/credentials.json` (CI / headless). Takes precedence over the file. |
 
 ---
 
 ## Typical end-to-end flow
 
 ```bash
-scouti login
-scouti request GET /me                                   # find your PROJECT_ID
-scouti request POST /projects/PID/keys '{"name":"web"}'  # widget key (pk_)
-scouti request PATCH /projects/PID '{"domains":["example.com"]}'
-scouti request POST /projects/PID/topics topic.json      # design topics
-scouti request POST /projects/PID/touchpoints tp.json    # surface them
-scouti request GET /projects/PID/verify                  # confirm it's live
+founderping login
+founderping request GET /me                                   # find your PROJECT_ID
+founderping request POST /projects/PID/keys '{"name":"web"}'  # widget key (pk_)
+founderping request PATCH /projects/PID '{"domains":["example.com"]}'
+founderping request POST /projects/PID/topics topic.json      # design topics
+founderping request POST /projects/PID/touchpoints tp.json    # surface them
+founderping request GET /projects/PID/verify                  # confirm it's live
 ```
 
 ---
 
 ## Troubleshooting
 
-- **`Not logged in`** — run `scouti login`, or export `SCOUTI_ACCESS_KEY`.
+- **`Not logged in`** — run `founderping login`, or export `FOUNDERPING_ACCESS_KEY`.
 - **Browser didn't open** — expected on remote/headless boxes; copy the printed
   URL into a browser manually.
 - **`request body is not valid JSON`** — the body (inline, file, or stdin) wasn't
   valid JSON. Check the source named in the error.
 - **`forbidden` / `not_found`** — you're not a member of that org/project, or the
   id is wrong. Re-check `GET /me`.
-- **Point at a different backend** — set `SCOUTI_API_URL`, e.g.
-  `SCOUTI_API_URL=http://localhost:3000 scouti request GET /me`.
+- **Point at a different backend** — set `FOUNDERPING_API_URL`, e.g.
+  `FOUNDERPING_API_URL=http://localhost:3000 founderping request GET /me`.
